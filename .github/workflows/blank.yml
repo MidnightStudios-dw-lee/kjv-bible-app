@@ -1,0 +1,39 @@
+name: Build KJV Bible App
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'KJVBibleExpo/package-lock.json'
+        
+    - name: Install dependencies
+      run: |
+        cd KJVBibleExpo
+        npm ci
+        
+    - name: Setup EAS
+      uses: expo/expo-github-action@v8
+      with:
+        eas-version: latest
+        token: ${{ secrets.EXPO_TOKEN }}
+        
+    - name: Build Android AAB (Production)
+      run: |
+        cd KJVBibleExpo  
+        npx eas build --platform android --profile production --non-interactive
